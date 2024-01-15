@@ -10,4 +10,4 @@ Streamlit-приложение - часть общего проекта AutoGrad
 
 ## Демонстрация работы сервиса
 
-![](https://github.com/Streamlit-for-autograde-eng-letter/how_the_app_works.gif)
+![](https://github.com/Pixel-Pirate-Coder/Streamlit-for-autograde-eng-letter/blob/main/how_the_app_works.gif)
