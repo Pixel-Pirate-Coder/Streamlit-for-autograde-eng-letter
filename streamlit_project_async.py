@@ -135,7 +135,7 @@ def open_json_questions(file_path):
 
 async def send_request(selected_question, user_input):
     # URL FastAPI-сервера
-    fast_api_url = "https://d5d08u0j2sectp2kvlgr.apigw.yandexcloud.net/predict"
+    fast_api_url = "https://stunning-star-octopus.ngrok-free.app"
 
     data = {
         "data": {
