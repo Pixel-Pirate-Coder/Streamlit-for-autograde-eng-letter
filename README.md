@@ -9,3 +9,5 @@ Streamlit-приложение - часть общего проекта AutoGrad
 [Ссылка на Streamlit-приложение](https://app-for-autograde-eng-letter.streamlit.app)
 
 ## Демонстрация работы сервиса
+
+![](https://github.com/Streamlit-for-autograde-eng-letter/how_the_app_works.gif)
