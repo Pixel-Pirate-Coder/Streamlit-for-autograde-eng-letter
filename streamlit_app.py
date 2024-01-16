@@ -6,9 +6,9 @@ import altair as alt
 import time
 import asyncio
 
-file_path = "C:/Users/SAMAROVEC/PycharmProjects/Fast API tutorial/top_3_questions.json"
-data_path = "C:/Users/SAMAROVEC/PycharmProjects/Fast API tutorial/Data_old.xlsx"
-data_path_full = "C:/Users/SAMAROVEC/PycharmProjects/Fast API tutorial/Data_new.xlsx"
+file_path = "top_3_questions.json"
+data_path = "Data_old.xlsx"
+data_path_full = "Data_new.xlsx"
 
 email_data = pd.read_excel(data_path)
 scores_email = email_data['Overall_score']
