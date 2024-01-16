@@ -11,3 +11,15 @@ Streamlit-приложение - часть общего проекта AutoGrad
 ## Демонстрация работы сервиса
 
 ![](https://github.com/Pixel-Pirate-Coder/Streamlit-for-autograde-eng-letter/blob/main/how_the_app_works.gif)
+
+**Текст для проверки (1 вопрос):**  
+
+Dear Mark,  
+Thanks a lot for your recent email. I'm always happy to get messages from you!  
+In your email you asked me about housework. Well I always help my mother around the house. Personaly I am responsible for making the bed, doing the
+grocery shopping, and vacuuming the floor. To be honest, I hate washing the dishes and moping the floor. As for me, it takes too much time. However, I try to
+enjoy doing my household chones and I always listen to music at this time to keep posittive.  
+By the way, tell me more about your father's lawn mower. How does it function? What colour is it? What is the function warranty period of the lawn mower?   
+That's all for now. Drop me a line.  
+Best wishes,   
+Polina  
