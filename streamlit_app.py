@@ -7,27 +7,31 @@ import httpx
 import pandas as pd
 import streamlit as st
 
+# Файлы с заданиями и данными для EDA
 file_path = "top_3_questions.json"
 data_path = "Data_old.xlsx"
 data_path_full = "Data_new.xlsx"
 
+# Создаем датафрейм с общими баллами по реальным данным
 email_data = pd.read_excel(data_path)
 scores_email = email_data["Overall_score"]
 scores_email = pd.DataFrame({"Overall_score": scores_email})
 
+# Создаем датафрейм с общими баллами по реальным данным + синтетическим
 email_data_full = pd.read_excel(data_path_full)
 scores_email_full = email_data_full["Overall_score"]
 scores_email_full = pd.DataFrame({"Overall_score": scores_email_full})
 
+# Конфиг страницы streamlit
 st.set_page_config(
     layout="wide", page_title="AutoGrade eng writing ЕГЭ", page_icon=":sunglasses:"
 )
 
 
+# Создаем интерактивный график по общим баллам - интервалы по оси X
 @st.cache_data
 def plot_graph_bin(email_data):
 
-    # Create an interactive histogram for email scores
     hist_email = (
         alt.Chart(email_data)
         .mark_bar()
@@ -43,10 +47,10 @@ def plot_graph_bin(email_data):
         .interactive()
     )
 
-    # Display the interactive histograms side by side
     st.altair_chart(hist_email, use_container_width=True)
 
 
+# Создаем интерактивный график по общим баллам в процентном соотношении
 @st.cache_data
 def plot_graph_bin_percent(email_data):
 
@@ -67,14 +71,13 @@ def plot_graph_bin_percent(email_data):
         .interactive()
     )
 
-    # Display the interactive histograms side by side
     st.altair_chart(hist_email, use_container_width=True)
 
 
+# Создаем интерактивный график по общим баллам
 @st.cache_data
 def plot_graph_bin_x_good(email_data):
 
-    # Create an interactive histogram for email scores
     hist_email = (
         alt.Chart(email_data)
         .mark_bar(size=50)
@@ -86,10 +89,10 @@ def plot_graph_bin_x_good(email_data):
         .interactive()
     )
 
-    # Display the interactive histograms side by side
     st.altair_chart(hist_email, use_container_width=True)
 
 
+# Создаем интерактивный круговой график по баллам для критериев
 @st.cache_data
 def draw_pie_chart(email_data, selected_criterion) -> None:
 
@@ -149,14 +152,14 @@ def draw_pie_chart(email_data, selected_criterion) -> None:
     st.altair_chart(chart_with_text, use_container_width=True)
 
 
+# Кнопка для скачивания результата
 def download_button(object_to_download, download_filename, button_text, key):
-    # Добавляем временный ключ, чтобы кнопка обновлялась при каждом нажатии
     download_key = f"download_button_{key}"
 
-    # Генерируем уникальный идентификатор для кнопки
     st.download_button(data=object_to_download, label=button_text, key=download_key)
 
 
+# Считываем вопросы из json
 def open_json_questions(file_path):
     with open(file_path, "r", encoding="utf-8") as json_file:
         questions_in_dict = json.load(json_file)
@@ -168,24 +171,24 @@ def open_json_questions(file_path):
     return questions
 
 
+# Отправка запроса на fast api
 async def send_request(selected_question, user_input):
     # URL FastAPI-сервера
     fast_api_url = "http://77.223.100.17:8080/predict"
 
     data = {"data": {"Question": selected_question, "Text": user_input}}
 
-    # Засекаем время начала запроса
     start_time = time.time()
 
     async with httpx.AsyncClient(timeout=120) as client:
         response = await client.post(fast_api_url, json=data)
 
-    # Засекаем время окончания запроса
     end_time = time.time()
 
     # Вывод времени запроса
     duration = end_time - start_time
 
+    # Вывод error'a в случаи неуспеха
     if response.status_code == 200:
         return response.json(), duration
     else:
@@ -197,6 +200,7 @@ async def send_request(selected_question, user_input):
 # Главная функция Streamlit
 async def main():
 
+    # Название страницы
     col_1_main, col_2_main = st.columns((8, 0.5))
     with col_1_main:
         st.title("Оценка письменной части ЕГЭ по английскому языку")
@@ -206,11 +210,12 @@ async def main():
         st.markdown("")
         st.write("Beta 0.1 ver.")
 
-    # Боковая панель для вкладок
+    # Вкладки с описанием, EDA и прогнозом
     tab1, tab2, tab3 = st.tabs(
         ["# **Краткий экскурс**", "# **Анализ данных**", "# **Предсказание**"]
     )
 
+    # Описание проекта
     with tab1:
         col1, col2, col3 = st.columns((4, 0.3, 3))
         with col1:
@@ -250,6 +255,7 @@ async def main():
                 "с максимальным общим баллом в 6 + комментарии по работе."
             )
 
+    # EDA
     with tab2:
 
         col1_1, col1_2, col1_3, col1_4 = st.columns((1, 1.8, 0.03, 0.7))
@@ -401,7 +407,7 @@ async def main():
                     "1 балл - 25%, 0 баллов - 10%"
                 )
 
-        # Переходим на вторую вкладку
+        # Прогноз
         with tab3:
             col1, col2, col3 = st.columns(3)
             with col3:
