@@ -31,7 +31,6 @@ st.set_page_config(
 # Создаем интерактивный график по общим баллам - интервалы по оси X
 @st.cache_data
 def plot_graph_bin(email_data):
-
     hist_email = (
         alt.Chart(email_data)
         .mark_bar()
@@ -53,10 +52,9 @@ def plot_graph_bin(email_data):
 # Создаем интерактивный график по общим баллам в процентном соотношении
 @st.cache_data
 def plot_graph_bin_percent(email_data):
-
     email_data = email_data.groupby("Overall_score").size().reset_index(name="total")
     email_data["Percent"] = (
-        (email_data["total"] / email_data["total"].sum()) * 100
+            (email_data["total"] / email_data["total"].sum()) * 100
     ).round(2)
 
     hist_email = (
@@ -77,7 +75,6 @@ def plot_graph_bin_percent(email_data):
 # Создаем интерактивный график по общим баллам
 @st.cache_data
 def plot_graph_bin_x_good(email_data):
-
     hist_email = (
         alt.Chart(email_data)
         .mark_bar(size=50)
@@ -95,15 +92,14 @@ def plot_graph_bin_x_good(email_data):
 # Создаем интерактивный круговой график по баллам для критериев
 @st.cache_data
 def draw_pie_chart(email_data, selected_criterion) -> None:
-
     score_3_data = email_data.loc[
-        :,
-        [
-            "Solving a communicative task",
-            "Text structure",
-            "Use of English (for emails)",
-        ],
-    ]
+                   :,
+                   [
+                       "Solving a communicative task",
+                       "Text structure",
+                       "Use of English (for emails)",
+                   ],
+                   ]
     df_score_3_data = pd.melt(score_3_data, var_name="Criterion", value_name="Score")
 
     filtered_df = df_score_3_data[df_score_3_data["Criterion"] == selected_criterion]
@@ -112,7 +108,7 @@ def draw_pie_chart(email_data, selected_criterion) -> None:
     df_merged = pd.merge(filtered_df, total_counts, on="Score")
     df_merged = df_merged.groupby("Score").size().reset_index(name="count")
     df_merged["Percent"] = (
-        (df_merged["count"] / df_merged["count"].sum()) * 100
+            (df_merged["count"] / df_merged["count"].sum()) * 100
     ).round(2)
 
     if selected_criterion == "Solving a communicative task":
@@ -153,7 +149,7 @@ def draw_pie_chart(email_data, selected_criterion) -> None:
 
 
 # Кнопка для скачивания результата
-def download_button(object_to_download, download_filename, button_text, key):
+def download_button(object_to_download, button_text, key):
     download_key = f"download_button_{key}"
 
     st.download_button(data=object_to_download, label=button_text, key=download_key)
@@ -164,17 +160,16 @@ def open_json_questions(file_path):
     with open(file_path, "r", encoding="utf-8") as json_file:
         questions_in_dict = json.load(json_file)
 
-    questions = []
-    for value in questions_in_dict.items():
-        questions.append(value)
+    # Возвращаем только значения (вопросы), игнорируя ключи
+    questions = list(questions_in_dict.values())
 
     return questions
 
 
 # Отправка запроса на fast api
-async def send_request(selected_question, user_input):
+async def send_request_pred(selected_question: str, user_input: str, username: str):
     # URL FastAPI-сервера
-    fast_api_url = "http://77.223.100.17:8080/predict"
+    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/predict?username={username}"
 
     data = {"data": {"Question": selected_question, "Text": user_input}}
 
@@ -197,9 +192,84 @@ async def send_request(selected_question, user_input):
         }, duration
 
 
+async def send_request_login(username: str, email: str):
+    # URL FastAPI-сервера
+    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/login"
+
+    data = {
+        "username": username,
+        "email": email,
+        "prediction_request": "",
+        "prediction_result": ""
+    }
+
+    start_time = time.time()
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        response = await client.post(fast_api_url, json=data)
+
+    end_time = time.time()
+
+    # Вывод времени запроса
+    duration = end_time - start_time
+
+    # Вывод error'a в случаи неуспеха
+    if response.status_code == 200:
+        return response.json(), duration
+    else:
+        return {
+            "error": f"HTTP Error {response.status_code}: {response.text}"
+        }, duration
+
+
+async def send_request_ping():
+    # URL FastAPI-сервера
+    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/ping"
+
+    start_time = time.time()
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        response = await client.get(fast_api_url)
+
+    end_time = time.time()
+
+    # Вывод времени запроса
+    duration = end_time - start_time
+
+    # Вывод error'a в случаи неуспеха
+    if response.status_code == 200:
+        return response.json(), duration
+    else:
+        return {
+            "error": f"HTTP Error {response.status_code}: {response.text}"
+        }, duration
+
+
+async def send_request_pred_to_email(username):
+    # URL FastAPI-сервера
+    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/send_email?username={username}"
+
+    start_time = time.time()
+
+    async with httpx.AsyncClient(timeout=120) as client:
+        response = await client.post(fast_api_url)
+
+    end_time = time.time()
+
+    # Вывод времени запроса
+    duration = end_time - start_time
+
+    # Вывод error'a в случаи неуспеха
+    if response.status_code == 200:
+        return response.json(), duration
+    else:
+        return {
+            "error": f"HTTP Error {response.status_code}: {response.text}"
+        }, duration
+
+
 # Главная функция Streamlit
 async def main():
-
     # Название страницы
     col_1_main, col_2_main = st.columns((8, 0.5))
     with col_1_main:
@@ -210,6 +280,8 @@ async def main():
         st.markdown("")
         st.write("Beta 0.1 ver.")
 
+    if 'login_successful' not in st.session_state:
+        st.session_state['login_successful'] = False
     # Вкладки с описанием, EDA и прогнозом
     tab1, tab2, tab3 = st.tabs(
         ["# **Краткий экскурс**", "# **Анализ данных**", "# **Предсказание**"]
@@ -409,75 +481,128 @@ async def main():
 
         # Прогноз
         with tab3:
+            # Инициализация переменных (логина и почты) в session_state
+            if 'username_login' not in st.session_state:
+                st.session_state.username_login = ''
+            if 'email_login' not in st.session_state:
+                st.session_state.email_login = ''
+
             col1, col2, col3 = st.columns(3)
-            with col3:
-                st.write("##### **Результат:**")
-            with col1:
-                selected_question = st.selectbox(
-                    "##### **Выберите задание:**",
-                    open_json_questions(file_path),
-                    placeholder="",
-                )
+            if not st.session_state.get('login_successful', False):
+                with st.container():
+                    with col1:
+                        with st.form(key='login'):
+                            username_login = st.text_input(label='Имя', value=st.session_state.username_login,
+                                                           key='username_login_input')
+                            email_login = st.text_input(label='Почта', value=st.session_state.email_login,
+                                                        key='email_login_input')
+                            button_login = st.form_submit_button('Залогиниться')
 
-                # Поле ввода текста
-                user_input = st.text_area("##### **Введите текст:**", height=200)
+                            if button_login:
+                                if username_login and email_login:
+                                    # Обновление session_state данными из формы
+                                    st.session_state.username_login = username_login
+                                    st.session_state.email_login = email_login
 
-                # Соединение входных данных
-                input_data = f"\n\n**Selected Question:** {selected_question}\n\n**User Input:**\n{user_input}"
-                # Обработка текста по кнопке
-                if st.button("Предсказать"):
-                    with st.spinner("Пожалуйста, подождите..."):
-                        with col3:
-                            if user_input:
-                                # Вызов функции обработки текста
-                                result, time_req = await send_request(
-                                    selected_question, user_input
-                                )
-                                # Вывод результата
-                                formatted_result = (
-                                    f"**Общий балл:** {result['total']} из 6 баллов \n "
-                                    f"**K1 (Решение коммуникативной задачи):** {result['k1']} из 2 баллов \n "
-                                    f"**K2 (Организация текста):** {result['k2']} из 2 баллов \n "
-                                    f"**K3 (Языковое оформление текста):** {result['k3']} из 2 баллов \n "
-                                    f"**Комментарии:** \n {result['comments']}"
-                                )
-                                # Если есть ошибка, выводим ее
-                                if "error" in result:
-                                    st.error(result["error"])
-                                else:
-                                    with col1:
+                                    with st.spinner("Проверка сервера и добавление пользователя"):
+                                        try:
+                                            result = await send_request_ping()
+                                            st.success(result[0]['detail'])
+
+                                        except:
+                                            st.error("Сервис недоступен")
+                                        await asyncio.sleep(2)
+
+                                        result, time_req = await send_request_login(st.session_state.username_login,
+                                                                                    st.session_state.email_login)
+
                                         st.success(
-                                            f"Успешно! Время обработки: {round(time_req, 1)} с"
+                                            f"{result['detail']}. Время обработки: {round(time_req, 1)} с")
+                                        await asyncio.sleep(3)
+                                        st.session_state['login_successful'] = True
+                                        # Перезагружаем страницу для очистки состояния
+                                        st.rerun()
+                                else:
+                                    st.warning("Вы не ввели имя или почту")
+            else:
+                with col3:
+                    st.write("##### **Результат:**")
+                with col1:
+                    selected_question = st.selectbox(
+                        "##### **Выберите задание:**",
+                        open_json_questions(file_path),
+                        placeholder="",
+                    )
+
+                    # Поле ввода текста
+                    user_input = st.text_area("##### **Введите текст:**", height=200)
+
+                    # Соединение входных данных
+                    input_data = f"\n\n**Selected Question:** {selected_question}\n\n**User Input:**\n{user_input}"
+                    # Обработка текста по кнопке
+
+                    if st.button("Предсказать и отправить результат на почту"):
+                        with st.spinner("Пожалуйста, подождите..."):
+                            with col3:
+                                if user_input:
+                                    # Вызов функции обработки текста
+                                    score, time_req = await send_request_pred(
+                                        selected_question, user_input, st.session_state.username_login
+                                    )
+                                    result, time_req_2 = await send_request_pred_to_email(
+                                        st.session_state.username_login
+                                    )
+                                    # Вывод результата
+                                    formatted_result = (
+                                        f"**Общий балл:** {score['total']} из 6 баллов \n "
+                                        f"**K1 (Решение коммуникативной задачи):** {score['k1']} из 2 баллов \n "
+                                        f"**K2 (Организация текста):** {score['k2']} из 2 баллов \n "
+                                        f"**K3 (Языковое оформление текста):** {score['k3']} из 2 баллов \n "
+                                        f"**Комментарии:** \n {score['comments']}"
+                                    )
+                                    # Если есть ошибка, выводим ее
+                                    if "error" in score:
+                                        st.error(score["error"])
+                                    else:
+                                        with col1:
+                                            st.success(
+                                                f"Успешно! Время обработки: {round(time_req, 1)} с"
+                                            )
+                                            if result['detail'] == "Результат отправлен на почту":
+                                                st.success(result['detail'])
+                                            elif result['detail'] == "Нет подключения к SMTP-серверу":
+                                                st.warning(result['detail'])
+                                            elif result['detail'] == "Пользователь не найден":
+                                                st.warning(result['detail'])
+
+                                        formatted_result = formatted_result.replace(
+                                            "\n", "<br>"
+                                        )
+                                        st.markdown(
+                                            f"""{formatted_result}""",
+                                            unsafe_allow_html=True,
+                                        )
+                                        download_data = (
+                                            f"{input_data}\n\n{formatted_result}"
                                         )
 
-                                    formatted_result = formatted_result.replace(
-                                        "\n", "<br>"
-                                    )
-                                    st.markdown(
-                                        f"""{formatted_result}""",
-                                        unsafe_allow_html=True,
-                                    )
-                                    download_data = (
-                                        f"{input_data}\n\n{formatted_result}"
-                                    )
-                                    # Кнопка для скачивания ответа в текстовом формате
-                                    download_button(
-                                        object_to_download=download_data,
-                                        download_filename="result.txt",
-                                        button_text="Скачать ответ (txt)",
-                                        key=1,
-                                    )
-                            else:
-                                st.warning("Введите текст для обработки.")
+                                        # Кнопка для скачивания ответа в текстовом формате
+                                        download_button(
+                                            object_to_download=download_data,
+                                            button_text="Скачать ответ (txt)",
+                                            key=1,
+                                        )
 
-            # Отображаем то, что ввел пользователь
-            with col2:
-                st.markdown("##### **Задание:**")
-                st.write(selected_question)
-                st.markdown("")
-                st.markdown("##### **Ваш ответ:**")
-                st.write(user_input)
+                                else:
+                                    st.warning("Введите текст для обработки.")
 
+                # Отображаем то, что ввел пользователь
+                with col2:
+                    st.markdown("##### **Задание:**")
+                    st.write(selected_question)
+                    st.markdown("")
+                    st.markdown("##### **Ваш ответ:**")
+                    st.write(user_input)
 
 if __name__ == "__main__":
     asyncio.run(main())
