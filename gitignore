@@ -66,6 +66,8 @@ target/
 
 # Pycharm
 .idea
+# Exclude .idea folder specifically for pythonProject1
+pythonProject1/.idea
 
 # VS Code
 .vscode/
@@ -91,3 +93,6 @@ target/
 
 # Any credentials
 credentials*
+
+# Dev Container Folder
+.devcontainer/
