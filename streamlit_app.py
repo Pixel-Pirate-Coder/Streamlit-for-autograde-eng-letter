@@ -381,7 +381,7 @@ async def main():
                 st.markdown("")
                 st.markdown("")
                 st.write(
-                    f"**Количество писем: {len(email_data_full['Text'])} (514 - новые)**"
+                    f"**Количество писем: {len(email_data_full['Text'])} (512 - новые)**"
                 )
                 st.write(f"**Количество уникальных заданий: {109}**")
                 st.write("**Топ-5 заданий по повторяемости:**")
