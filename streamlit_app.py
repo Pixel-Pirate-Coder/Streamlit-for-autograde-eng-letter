@@ -169,7 +169,7 @@ def open_json_questions(file_path):
 # Отправка запроса на fast api
 async def send_request_pred(selected_question: str, user_input: str, username: str):
     # URL FastAPI-сервера
-    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/predict?username={username}"
+    fast_api_url = f"https://stunning-star-octopus.ngrok-free.app/predict/redis?username={username}"
 
     data = {"data": {"Question": selected_question, "Text": user_input}}
 
